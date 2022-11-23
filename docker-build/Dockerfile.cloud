@@ -30,19 +30,26 @@ WORKDIR /invokeai
 # So we copy it to the working directory to maintain compatibility with other installation methods
 COPY environments-and-requirements/environment-lin-cuda.yml environment.yml
 
-ENV MAMBA_ROOT_PREFIX=/opt/conda
+# ENV MAMBA_ROOT_PREFIX=/opt/conda
+ENV PYTHON_VENV=.venv
+
 
 # Patch the env file to remove installation of local package
 RUN sed -i '/-e \./d' environment.yml
 
-# RUN micromamba create -y -f environment.yml &&\
-RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba create -y -f environment.yml
+# # RUN micromamba create -y -f environment.yml &&\
+# RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba create -y -f environment.yml
     # micromamba clean --all -f -y &&\
     # rm -rf ${MAMBA_ROOT_PREFIX}/pkgs
 
 ### Copy the rest of the context and install local package
 COPY . .
-RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba -n invokeai run pip install -e .
+RUN apt install -y python3-venv python3-pip
+RUN --mount=type=cache,target=$PYTHON_VENV \
+    python3 -m venv .venv &&\
+    pip install -e . &&\
+    source .venv/bin/activate
+# RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba -n invokeai run pip install -e .
 
 ### Default model config
 RUN cp configs/models.yaml.example configs/models.yaml
