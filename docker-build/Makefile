@@ -15,7 +15,7 @@ GROUP=$(shell id -g)
 # Contents can be moved to a persistent storage and used to rehydrate the cache on another host
 
 build:
-	docker buildx build -t local/invokeai:latest -f Dockerfile.cloud ..
+	docker build -t local/invokeai:latest -f Dockerfile.cloud ..
 
 # Populate the cache.
 # First, pre-seed the config dir on the host with the content from the image,
