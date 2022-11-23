@@ -26,7 +26,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 RUN --mount=type=cache,target=$VIRTUAL_ENV \
-    cp installer/py3.10-linux-x86_64-cuda-reqs.txt requirements.txt
+    cp installer/py3.10-linux-x86_64-cuda-reqs.txt requirements.txt && \
     python3 -m venv $VIRTUAL_ENV &&\
     pip install --extra-index-url https://download.pytorch.org/whl/cu116 \
         torch==1.12.0+cu116 \
