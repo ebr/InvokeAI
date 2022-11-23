@@ -44,8 +44,8 @@ cli:
 	docker run --rm -it --runtime=nvidia --gpus=all \
 		-v ${INVOKEAI_CACHEDIR}:${INVOKEAI_ROOT} \
 		-v ${INVOKEAI_CACHEDIR}/.cache:/root/.cache \
-		--entrypoint bash -p9090:9090 ${IMAGE} \
-		-c "python scripts/invoke.py --web --host 0.0.0.0 --root ${INVOKEAI_ROOT}"
+		--entrypoint bash ${IMAGE} \
+		-c "python scripts/invoke.py --root ${INVOKEAI_ROOT}"
 
 # Run the container with the cache mounted and open a bash shell instead of the Invoke CLI or webserver
 shell:
