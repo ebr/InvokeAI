@@ -31,12 +31,12 @@ COPY environments-and-requirements/environment-lin-cuda.yml environment.yml
 
 # ENV MAMBA_ROOT_PREFIX=/opt/conda
 ENV VIRTUAL_ENV=.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ### Copy the rest of the context and install local package
 COPY . .
-RUN --mount=type=cache,target=$PYTHON_VENV \
-    python3 -m venv $PYTHON_VENV &&\
-    . $PYTHON_VENV/bin/activate &&\
+RUN --mount=type=cache,target=$VIRTUAL_ENV \
+    python3 -m venv $VIRTUAL_ENV &&\
     pip install --extra-index-url https://download.pytorch.org/whl/cu116 \
         torch==1.12.0+cu116 \
         torchvision==0.13.0+cu116 &&\
