@@ -23,7 +23,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 # --mount target does not support env vars!
-RUN --mount=type=cache,target=/invokeai/.venv --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip \
     cp installer/py3.10-linux-x86_64-cuda-reqs.txt requirements.txt && \
     python3 -m venv ${VIRTUAL_ENV} &&\
     pip install --extra-index-url https://download.pytorch.org/whl/cu116 \
