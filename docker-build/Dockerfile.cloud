@@ -14,16 +14,18 @@ RUN --mount=type=cache,target=/var/cache/apt \
     python3-venv \
     python3-pip
 
-WORKDIR /invokeai
 
-ENV VIRTUAL_ENV=/invokeai/.venv
+ARG APP_ROOT=/invokeai
+WORKDIR ${APP_ROOT}
+
+ENV VIRTUAL_ENV=${APP_ROOT}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . .
 # --mount target does not support env vars!
-RUN --mount=type=cache,target=.venv --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/invokeai/.venv --mount=type=cache,target=/root/.cache/pip \
     cp installer/py3.10-linux-x86_64-cuda-reqs.txt requirements.txt && \
-    python3 -m venv $VIRTUAL_ENV &&\
+    python3 -m venv ${VIRTUAL_ENV} &&\
     pip install --extra-index-url https://download.pytorch.org/whl/cu116 \
         torch==1.12.0+cu116 \
         torchvision==0.13.0+cu116 &&\
@@ -43,10 +45,13 @@ RUN apt update && apt install -y \
     python3-pip \
     && apt-get clean
 
-COPY --from=builder /invokeai /invokeai
-WORKDIR /invokeai
-ENV VIRTUAL_ENV=/invokeai/.venv
+ARG APP_ROOT=/invokeai
+WORKDIR ${APP_ROOT}
+
+ENV VIRTUAL_ENV=${APP_ROOT}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY --from=builder ${APP_ROOT} ${APP_ROOT}
 
 ENTRYPOINT ["bash", "-c", "python3 scripts/invoke.py" ]
 
