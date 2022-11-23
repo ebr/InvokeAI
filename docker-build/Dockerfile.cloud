@@ -19,7 +19,6 @@ RUN apt update && apt install -y \
     && apt-get clean
 
 # Micromamba is a minimal conda implementation
-ENV MAMBA_ROOT_PREFIX=/opt/conda
 RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 
 WORKDIR /invokeai
@@ -31,15 +30,19 @@ WORKDIR /invokeai
 # So we copy it to the working directory to maintain compatibility with other installation methods
 COPY environments-and-requirements/environment-lin-cuda.yml environment.yml
 
+ENV MAMBA_ROOT_PREFIX=/opt/conda
+
 # Patch the env file to remove installation of local package
 RUN sed -i '/-e \./d' environment.yml
-RUN micromamba create -y -f environment.yml &&\
-    micromamba clean --all -f -y &&\
-    rm -rf ${MAMBA_ROOT_PREFIX}/pkgs
+
+# RUN micromamba create -y -f environment.yml &&\
+RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba create -y -f environment.yml
+    # micromamba clean --all -f -y &&\
+    # rm -rf ${MAMBA_ROOT_PREFIX}/pkgs
 
 ### Copy the rest of the context and install local package
 COPY . .
-RUN micromamba -n invokeai run pip install -e .
+RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba -n invokeai run pip install -e .
 
 ### Default model config
 RUN cp configs/models.yaml.example configs/models.yaml
