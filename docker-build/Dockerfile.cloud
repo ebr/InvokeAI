@@ -43,12 +43,14 @@ RUN sed -i '/-e \./d' environment.yml
     # rm -rf ${MAMBA_ROOT_PREFIX}/pkgs
 
 ### Copy the rest of the context and install local package
-COPY . .
 RUN apt install -y python3-venv python3-pip
+COPY . .
 RUN --mount=type=cache,target=$PYTHON_VENV \
-    python3 -m venv .venv &&\
-    pip install -e . &&\
-    source .venv/bin/activate
+    python3 -m venv $PYTHON_VENV &&\
+    pip install torch==1.12.0+cu116 torchvision==0.13.0+cu116 --extra-index-url https://download.pytorch.org/whl/cu116 &&\
+    pip install -e .
+
+RUN . $PYTHON_VENV/bin/activate
 # RUN --mount=type=cache,target=$MAMBA_ROOT_PREFIX micromamba -n invokeai run pip install -e .
 
 ### Default model config
@@ -58,4 +60,4 @@ ENTRYPOINT ["bash"]
 
 EXPOSE 9090
 
-CMD [ "-c", "micromamba -r ${MAMBA_ROOT_PREFIX} -n invokeai run python scripts/invoke.py --web --host 0.0.0.0"]
+CMD [ "-c", "python3 scripts/invoke.py --web --host 0.0.0.0"]
