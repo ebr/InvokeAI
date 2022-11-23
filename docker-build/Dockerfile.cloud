@@ -1,6 +1,6 @@
 # Copyright (c) 2022 Eugene Brodsky (https://github.com/ebr)
 
-FROM nvidia/cuda:11.7.1-runtime-ubuntu22.04 AS base
+FROM library/ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -34,8 +34,13 @@ RUN --mount=type=cache,target=$VIRTUAL_ENV \
     pip install -r requirements.txt &&\
     pip install -e .
 
-ENTRYPOINT ["bash"]
+FROM ubuntu:22.04 as runtime
 
-EXPOSE 9090
+COPY --from=builder /invokeai /invokeai
+WORKDIR /invokeai
+ENV VIRTUAL_ENV=.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-CMD [ "-c", "python3 scripts/invoke.py --web --host 0.0.0.0"]
+ENTRYPOINT ["bash", "-c", "python3 scripts/invoke.py" ]
+
+CMD ["--web", "--host 0.0.0.0"]
