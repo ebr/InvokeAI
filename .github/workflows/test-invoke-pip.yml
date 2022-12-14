@@ -1,140 +1,140 @@
-name: Test invoke.py pip
-on:
-  push:
-    branches:
-      - 'main'
-  pull_request:
-    types:
-      - 'ready_for_review'
-      - 'opened'
-      - 'synchronize'
+# name: Test invoke.py pip
+# on:
+#   push:
+#     branches:
+#       - 'main'
+#   pull_request:
+#     types:
+#       - 'ready_for_review'
+#       - 'opened'
+#       - 'synchronize'
 
-concurrency:
-   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-   cancel-in-progress: true
+# concurrency:
+#    group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+#    cancel-in-progress: true
 
-jobs:
-  matrix:
-    if: github.event.pull_request.draft == false
-    strategy:
-      matrix:
-        python-version:
-          # - '3.9'
-          - '3.10'
-        pytorch:
-          - linux-cuda-11_6
-          - linux-cuda-11_7
-          - linux-rocm-5_2
-          - linux-cpu
-          - macos-default
-          - windows-cpu
-          - windows-cuda-11_6
-          - windows-cuda-11_7
-        include:
-          - pytorch: linux-cuda-11_6
-            os: ubuntu-22.04
-            extra-index-url: 'https://download.pytorch.org/whl/cu116'
-            github-env: $GITHUB_ENV
-          - pytorch: linux-cuda-11_7
-            os: ubuntu-22.04
-            github-env: $GITHUB_ENV
-          - pytorch: linux-rocm-5_2
-            os: ubuntu-22.04
-            extra-index-url: 'https://download.pytorch.org/whl/rocm5.2'
-            github-env: $GITHUB_ENV
-          - pytorch: linux-cpu
-            os: ubuntu-22.04
-            extra-index-url: 'https://download.pytorch.org/whl/cpu'
-            github-env: $GITHUB_ENV
-          - pytorch: macos-default
-            os: macOS-12
-            github-env: $GITHUB_ENV
-          - pytorch: windows-cpu
-            os: windows-2022
-            github-env: $env:GITHUB_ENV
-          - pytorch: windows-cuda-11_6
-            os: windows-2022
-            extra-index-url: 'https://download.pytorch.org/whl/cu116'
-            github-env: $env:GITHUB_ENV
-          - pytorch: windows-cuda-11_7
-            os: windows-2022
-            extra-index-url: 'https://download.pytorch.org/whl/cu117'
-            github-env: $env:GITHUB_ENV
-    name: ${{ matrix.pytorch }} on ${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        id: checkout-sources
-        uses: actions/checkout@v3
+# jobs:
+#   matrix:
+#     if: github.event.pull_request.draft == false
+#     strategy:
+#       matrix:
+#         python-version:
+#           # - '3.9'
+#           - '3.10'
+#         pytorch:
+#           - linux-cuda-11_6
+#           - linux-cuda-11_7
+#           - linux-rocm-5_2
+#           - linux-cpu
+#           - macos-default
+#           - windows-cpu
+#           - windows-cuda-11_6
+#           - windows-cuda-11_7
+#         include:
+#           - pytorch: linux-cuda-11_6
+#             os: ubuntu-22.04
+#             extra-index-url: 'https://download.pytorch.org/whl/cu116'
+#             github-env: $GITHUB_ENV
+#           - pytorch: linux-cuda-11_7
+#             os: ubuntu-22.04
+#             github-env: $GITHUB_ENV
+#           - pytorch: linux-rocm-5_2
+#             os: ubuntu-22.04
+#             extra-index-url: 'https://download.pytorch.org/whl/rocm5.2'
+#             github-env: $GITHUB_ENV
+#           - pytorch: linux-cpu
+#             os: ubuntu-22.04
+#             extra-index-url: 'https://download.pytorch.org/whl/cpu'
+#             github-env: $GITHUB_ENV
+#           - pytorch: macos-default
+#             os: macOS-12
+#             github-env: $GITHUB_ENV
+#           - pytorch: windows-cpu
+#             os: windows-2022
+#             github-env: $env:GITHUB_ENV
+#           - pytorch: windows-cuda-11_6
+#             os: windows-2022
+#             extra-index-url: 'https://download.pytorch.org/whl/cu116'
+#             github-env: $env:GITHUB_ENV
+#           - pytorch: windows-cuda-11_7
+#             os: windows-2022
+#             extra-index-url: 'https://download.pytorch.org/whl/cu117'
+#             github-env: $env:GITHUB_ENV
+#     name: ${{ matrix.pytorch }} on ${{ matrix.python-version }}
+#     runs-on: ${{ matrix.os }}
+#     steps:
+#       - name: Checkout sources
+#         id: checkout-sources
+#         uses: actions/checkout@v3
 
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+#       - name: setup python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: ${{ matrix.python-version }}
 
-      - name: Set Cache-Directory Windows
-        if: runner.os == 'Windows'
-        id: set-cache-dir-windows
-        run: |
-          echo "CACHE_DIR=$HOME\invokeai\models" >> ${{ matrix.github-env }}
-          echo "PIP_NO_CACHE_DIR=1" >> ${{ matrix.github-env }}
+#       - name: Set Cache-Directory Windows
+#         if: runner.os == 'Windows'
+#         id: set-cache-dir-windows
+#         run: |
+#           echo "CACHE_DIR=$HOME\invokeai\models" >> ${{ matrix.github-env }}
+#           echo "PIP_NO_CACHE_DIR=1" >> ${{ matrix.github-env }}
 
-      - name: Set Cache-Directory others
-        if: runner.os != 'Windows'
-        id: set-cache-dir-others
-        run: echo "CACHE_DIR=$HOME/invokeai/models" >> ${{ matrix.github-env }}
+#       - name: Set Cache-Directory others
+#         if: runner.os != 'Windows'
+#         id: set-cache-dir-others
+#         run: echo "CACHE_DIR=$HOME/invokeai/models" >> ${{ matrix.github-env }}
 
-      - name: set test prompt to main branch validation
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: echo "TEST_PROMPTS=tests/preflight_prompts.txt" >> ${{ matrix.github-env }}
+#       - name: set test prompt to main branch validation
+#         if: ${{ github.ref == 'refs/heads/main' }}
+#         run: echo "TEST_PROMPTS=tests/preflight_prompts.txt" >> ${{ matrix.github-env }}
 
-      - name: set test prompt to Pull Request validation
-        if: ${{ github.ref != 'refs/heads/main' }}
-        run: echo "TEST_PROMPTS=tests/validate_pr_prompt.txt" >> ${{ matrix.github-env }}
+#       - name: set test prompt to Pull Request validation
+#         if: ${{ github.ref != 'refs/heads/main' }}
+#         run: echo "TEST_PROMPTS=tests/validate_pr_prompt.txt" >> ${{ matrix.github-env }}
 
-      - name: install invokeai
-        run: pip3 install --use-pep517 -e .
-        env:
-          PIP_EXTRA_INDEX_URL: ${{ matrix.extra-index-url }}
+#       - name: install invokeai
+#         run: pip3 install --use-pep517 -e .
+#         env:
+#           PIP_EXTRA_INDEX_URL: ${{ matrix.extra-index-url }}
 
-      - name: Use Cached models
-        id: cache-sd-model
-        uses: actions/cache@v3
-        env:
-          cache-name: huggingface-models
-        with:
-          path: ${{ env.CACHE_DIR }}
-          key: ${{ env.cache-name }}
-          enableCrossOsArchive: true
+#       - name: Use Cached models
+#         id: cache-sd-model
+#         uses: actions/cache@v3
+#         env:
+#           cache-name: huggingface-models
+#         with:
+#           path: ${{ env.CACHE_DIR }}
+#           key: ${{ env.cache-name }}
+#           enableCrossOsArchive: true
 
-      - name: run configure_invokeai
-        id: run-preload-models
-        env:
-          HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
-        run: >
-          configure_invokeai
-          --yes
-          --default_only
-          --full-precision
-        # can't use fp16 weights without a GPU
+#       - name: run configure_invokeai
+#         id: run-preload-models
+#         env:
+#           HUGGING_FACE_HUB_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+#         run: >
+#           configure_invokeai
+#           --yes
+#           --default_only
+#           --full-precision
+#         # can't use fp16 weights without a GPU
 
-      - name: Run the tests
-        if: runner.os != 'Windows'
-        id: run-tests
-        env:
-          # Set offline mode to make sure configure preloaded successfully.
-          HF_HUB_OFFLINE: 1
-          HF_DATASETS_OFFLINE: 1
-          TRANSFORMERS_OFFLINE: 1
-        run: >
-          invoke
-          --no-patchmatch
-          --no-nsfw_checker
-          --from_file ${{ env.TEST_PROMPTS }}
+#       - name: Run the tests
+#         if: runner.os != 'Windows'
+#         id: run-tests
+#         env:
+#           # Set offline mode to make sure configure preloaded successfully.
+#           HF_HUB_OFFLINE: 1
+#           HF_DATASETS_OFFLINE: 1
+#           TRANSFORMERS_OFFLINE: 1
+#         run: >
+#           invoke
+#           --no-patchmatch
+#           --no-nsfw_checker
+#           --from_file ${{ env.TEST_PROMPTS }}
 
-      - name: Archive results
-        id: archive-results
-        uses: actions/upload-artifact@v3
-        with:
-          name: results_${{ matrix.pytorch }}_${{ matrix.python-version }}
-          path: ${{ env.INVOKEAI_ROOT }}/outputs
+#       - name: Archive results
+#         id: archive-results
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: results_${{ matrix.pytorch }}_${{ matrix.python-version }}
+#           path: ${{ env.INVOKEAI_ROOT }}/outputs
