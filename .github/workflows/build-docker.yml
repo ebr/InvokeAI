@@ -1,15 +1,13 @@
-name: Build and push cloud image
+name: Build/push docker image
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #   - main
-  #   tags:
-  #     - v*
-  # # we will NOT push the image on pull requests, only test buildability.
-  # pull_request:
-  #   branches:
-  #   - main
+  push:
+    branches:
+#    - main
+    - feat/*
+    - develop
+    tags:
+      - v*
 
 permissions:
   contents: read
@@ -24,19 +22,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-        - x86_64
-        # requires resolving a patchmatch issue
-        # - aarch64
+        gpu:
+          - nvidia
+          # - amd
     runs-on: ubuntu-latest
-    name: ${{ matrix.arch }}
+    name: ${{ matrix.gpu }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
-      if: matrix.arch == 'aarch64'
 
     - name: Docker meta
       id: meta
@@ -52,16 +48,21 @@ jobs:
         # :1.2 (for semver tags)
         # :<sha>
         tags: |
+
           type=edge,branch=main
           type=ref,event=branch
           type=ref,event=tag
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=sha
-        # suffix image tags with architecture
+
+          ### FORK-only ###
+          type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'develop') }}
+
+        # suffix image tags with gpu type
         flavor: |
           latest=auto
-          suffix=-${{ matrix.arch }},latest=true
+          suffix=-${{ matrix.gpu }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -78,9 +79,13 @@ jobs:
     - name: Build and push the image
       uses: docker/build-push-action@v3
       with:
+        cache-from: |
+          type=gha
+        cache-to: |
+          type=gha
         context: .
-        file: docker-build/Dockerfile.cloud
-        platforms: Linux/${{ matrix.arch }}
+        file: docker/Dockerfile
+        platforms: linux/amd64,linux/arm64
         # do not push the image on PRs
         push: false
         tags: ${{ steps.meta.outputs.tags }}
