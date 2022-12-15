@@ -13,7 +13,7 @@ GROUP=$(shell id -g)
 # Contents can be moved to a persistent storage and used to prime the cache on another host.
 
 build:
-	DOCKER_BUILDKIT=1 docker build -t local/invokeai:latest -f Dockerfile.cloud ..
+	DOCKER_BUILDKIT=1 docker build -t local/invokeai:latest ..
 
 configure:
 	docker run --rm -it --runtime=nvidia --gpus=all \
