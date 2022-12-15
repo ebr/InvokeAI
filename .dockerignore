@@ -1,23 +1,14 @@
-# use this file as a whitelist
 *
-!invokeai
+!backend
+!environments-and-requirements
+!frontend
 !ldm
-!pyproject.toml
-!README.md
+!main.py
+!scripts
+!server
+!static
+!setup.py
+!configs
+!docker/docker-entrypoint.sh
 
-# Guard against pulling in any models that might exist in the directory tree
-**/*.pt*
-**/*.ckpt
-
-# ignore frontend but whitelist dist
-invokeai/frontend/**
-!invokeai/frontend/dist
-
-# ignore invokeai/assets but whitelist invokeai/assets/web
-invokeai/assets
-!invokeai/assets/web
-
-# ignore python cache
 **/__pycache__
-**/*.py[cod]
-**/*.egg-info
