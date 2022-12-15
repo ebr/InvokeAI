@@ -5,6 +5,7 @@ FROM library/ubuntu:22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt update && apt-get install -y \
@@ -17,29 +18,36 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         python3-opencv \
         libopencv-dev
 
-# This is needed for patchmatch support
-RUN cd /usr/lib/x86_64-linux-gnu/pkgconfig/ &&\
-   ln -sf opencv4.pc opencv.pc
-
 ARG WORKDIR=/invokeai
 WORKDIR ${WORKDIR}
 
 ENV VIRTUAL_ENV=${WORKDIR}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ARG TORCH_VERSION=1.13.0
+ARG TORCHVISION_VERSION=0.14.0
 
 RUN --mount=type=cache,target=/root/.cache/pip \
+    echo $(uname -p) &&\
     python3 -m venv ${VIRTUAL_ENV} &&\
-    pip install --extra-index-url https://download.pytorch.org/whl/cu116 \
-        torch==1.12.0+cu116 \
-        torchvision==0.13.0+cu116 &&\
+    if [ $(uname -p) = "x86_64" ]; then \
+        extra_index_url=https://download.pytorch.org/whl/cu116; \
+        torch=$TORCH_VERSION+cu116; \
+        torchvision=$TORCHVISION_VERSION+cu116; \
+    else \
+        extra_index_url=https://download.pytorch.org/whl/nightly/cpu; \
+        torch=$TORCH_VERSION; \
+        torchvision=$TORCHVISION_VERSION; \
+    fi &&\
+    echo $extra_index_url $torch $torchvision &&\
+    pip install --extra-index-url $extra_index_url \
+        torch==$torch \
+        torchvision==$torchvision &&\
     pip install -e git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch
 
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
-    cp environments-and-requirements/requirements-lin-cuda.txt requirements.txt && \
-    pip install -r requirements.txt &&\
+    pip install -r environments-and-requirements/requirements-base.txt &&\
     pip install -e .
-
 
 #######################
 #### Runtime stage ####
@@ -48,6 +56,7 @@ FROM library/ubuntu:22.04 as runtime
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt update && apt install -y --no-install-recommends \
@@ -73,14 +82,11 @@ ENV VIRTUAL_ENV=${WORKDIR}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY --from=builder ${WORKDIR} ${WORKDIR}
-COPY --from=builder /usr/lib/x86_64-linux-gnu/pkgconfig /usr/lib/x86_64-linux-gnu/pkgconfig
 
 # build patchmatch
+RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
 RUN python -c "from patchmatch import patch_match"
 
-## workaround for non-existent initfile when runtime directory is mounted; see #1613
-RUN touch /root/.invokeai
+ENTRYPOINT ["bash", "-c"]
 
-ENTRYPOINT ["bash"]
-
-CMD ["-c", "python3 scripts/invoke.py --web --host 0.0.0.0"]
+CMD ["python3 scripts/invoke.py --web --host 0.0.0.0"]
