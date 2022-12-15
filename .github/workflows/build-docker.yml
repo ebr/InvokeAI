@@ -63,8 +63,9 @@ jobs:
           type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'develop') }}
 
         # suffix image tags with gpu type
+        # latest is handled through type=raw
         flavor: |
-          latest=auto
+          latest=false
           suffix=-${{ matrix.gpu-driver }},onlatest=true
 
     - name: Set up Docker Buildx
