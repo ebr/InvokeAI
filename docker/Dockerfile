@@ -25,25 +25,37 @@ ENV VIRTUAL_ENV=${WORKDIR}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG TORCH_VERSION=1.13.0
 ARG TORCHVISION_VERSION=0.14.0
+ARG GPU_DRIVER=cuda
+ARG TARGETPLATFORM
+# unused but available
+ARG BUILDPLATFORM
 
+# Install pytorch before all other pip packages
+# NOTE: there are no pytorch builds for arm64 with GPU accelearion
+# Only CPU images are build for ARM currently
+# x86_64/CUDA is the default build
 RUN --mount=type=cache,target=/root/.cache/pip \
-    echo $(uname -p) &&\
     python3 -m venv ${VIRTUAL_ENV} &&\
-    if [ $(uname -p) = "x86_64" ]; then \
-        extra_index_url=https://download.pytorch.org/whl/cu116; \
-        torch=$TORCH_VERSION+cu116; \
-        torchvision=$TORCHVISION_VERSION+cu116; \
-    else \
+    if [ "$TARGETPLATFORM" = "linux/arm64" ] || [ "$GPU_DRIVER" = "cpu" ]; then \
         extra_index_url=https://download.pytorch.org/whl/nightly/cpu; \
         torch=$TORCH_VERSION; \
         torchvision=$TORCHVISION_VERSION; \
+    elif [ "$GPU_DRIVER" = "rocm"]; then \
+        extra_index_url=https://download.pytorch.org/whl/rocm5.2; \
+        torch=$TORCH_VERSION \
+        torchvision=$TORCHVISION_VERSION; \
+    else \
+        extra_index_url=https://download.pytorch.org/whl/cu116; \
+        torch=$TORCH_VERSION+cu116; \
+        torchvision=$TORCHVISION_VERSION+cu116; \
     fi &&\
-    echo $extra_index_url $torch $torchvision &&\
     pip install --extra-index-url $extra_index_url \
         torch==$torch \
         torchvision==$torchvision &&\
     pip install -e git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch
 
+# Install the rest of requirements
+# and the local package (in editable mode)
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r environments-and-requirements/requirements-base.txt &&\
@@ -89,4 +101,5 @@ RUN python -c "from patchmatch import patch_match"
 
 ENTRYPOINT ["bash", "-c"]
 
+# WORKDIR ${INVOKEAI_ROOT}
 CMD ["python3 scripts/invoke.py --web --host 0.0.0.0"]
