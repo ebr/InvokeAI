@@ -6,9 +6,7 @@ FROM library/ubuntu:22.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt update && apt-get install -y \
+RUN  apt update && apt-get install -y \
         git \
         libglib2.0-0 \
         libgl1-mesa-glx \
@@ -18,10 +16,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         python3-opencv \
         libopencv-dev
 
-ARG WORKDIR=/invokeai
-WORKDIR ${WORKDIR}
-
-ENV VIRTUAL_ENV=${WORKDIR}/.venv
+ENV INVOKEAI_SRC=/invokeai
+ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG TORCH_VERSION=1.13.0
 ARG TORCHVISION_VERSION=0.14.0
@@ -30,12 +26,13 @@ ARG TARGETPLATFORM
 # unused but available
 ARG BUILDPLATFORM
 
+WORKDIR ${INVOKEAI_SRC}
+
 # Install pytorch before all other pip packages
 # NOTE: there are no pytorch builds for arm64 with GPU accelearion
 # Only CPU images are build for ARM currently
 # x86_64/CUDA is the default build
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m venv ${VIRTUAL_ENV} &&\
+RUN python3 -m venv ${VIRTUAL_ENV} &&\
     if [ "$TARGETPLATFORM" = "linux/arm64" ] || [ "$GPU_DRIVER" = "cpu" ]; then \
         extra_index_url=https://download.pytorch.org/whl/nightly/cpu; \
         torch=$TORCH_VERSION; \
@@ -57,8 +54,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Install the rest of requirements
 # and the local package (in editable mode)
 COPY . .
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r environments-and-requirements/requirements-base.txt &&\
+RUN pip install -r environments-and-requirements/requirements-base.txt &&\
     pip install -e .
 
 #######################
@@ -69,9 +65,7 @@ FROM library/ubuntu:22.04 as runtime
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt update && apt install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
         git \
         curl \
         ncdu \
@@ -86,20 +80,21 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libopencv-dev &&\
     apt-get clean && apt-get autoclean
 
-ARG WORKDIR=/invokeai
-WORKDIR ${WORKDIR}
-
+ENV INVOKEAI_SRC=/invokeai
 ENV INVOKEAI_ROOT=/mnt/invokeai
-ENV VIRTUAL_ENV=${WORKDIR}/.venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
 
-COPY --from=builder ${WORKDIR} ${WORKDIR}
+
+WORKDIR ${INVOKEAI_SRC}
+
+COPY --from=builder ${INVOKEAI_SRC}/ ./
 
 # build patchmatch
 RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
 RUN python -c "from patchmatch import patch_match"
 
-ENTRYPOINT ["bash", "-c"]
+RUN mv docker/docker-entrypoint.sh ./
 
-# WORKDIR ${INVOKEAI_ROOT}
-CMD ["python3 scripts/invoke.py --web --host 0.0.0.0"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["python3", "scripts/invoke.py", "--web", "--host", "0.0.0.0"]
