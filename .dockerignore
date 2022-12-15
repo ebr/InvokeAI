@@ -8,12 +8,7 @@
 !server
 !static
 !setup.py
-
-# Guard against pulling in any models that might exist in the directory tree
-**/*.pt*
-
-# unignore configs, but only ignore the custom models.yaml, in case it exists
 !configs
-configs/models.yaml
+!docker/docker-entrypoint.sh
 
 **/__pycache__
