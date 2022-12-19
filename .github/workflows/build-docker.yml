@@ -60,7 +60,7 @@ jobs:
           type=sha
 
           ### FORK-only ###
-          type=raw,value=latest,match=${{ github.ref == format('refs/heads/{0}', 'develop') }}
+          type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'develop') }}
 
         # suffix image tags with gpu type
         # latest is handled through type=raw
@@ -68,31 +68,31 @@ jobs:
           latest=false
           suffix=-${{ matrix.gpu-driver }},onlatest=true
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+    # - name: Set up Docker Buildx
+    #   uses: docker/setup-buildx-action@v2
 
-    # do not login to container registry on PRs
-    - if: github.event_name != 'pull_request'
-      name: Docker login
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+    # # do not login to container registry on PRs
+    # - if: github.event_name != 'pull_request'
+    #   name: Docker login
+    #   uses: docker/login-action@v2
+    #   with:
+    #     registry: ghcr.io
+    #     username: ${{ github.actor }}
+    #     password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push cloud image
-      uses: docker/build-push-action@v3
-      with:
-        cache-from: |
-          type=gha
-        cache-to: |
-          type=gha
-        context: .
-        build-args: |
-          GPU_DRIVER=${{ matrix.gpu-driver }}
-        file: docker/Dockerfile
-        platforms: linux/amd64,linux/arm64
-        # do not push the image on PRs
-        push: ${{ github.event_name != 'pull_request' }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+    # - name: Build and push cloud image
+    #   uses: docker/build-push-action@v3
+    #   with:
+    #     cache-from: |
+    #       type=gha
+    #     cache-to: |
+    #       type=gha
+    #     context: .
+    #     build-args: |
+    #       GPU_DRIVER=${{ matrix.gpu-driver }}
+    #     file: docker/Dockerfile
+    #     platforms: linux/amd64,linux/arm64
+    #     # do not push the image on PRs
+    #     push: ${{ github.event_name != 'pull_request' }}
+    #     tags: ${{ steps.meta.outputs.tags }}
+    #     labels: ${{ steps.meta.outputs.labels }}
