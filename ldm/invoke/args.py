@@ -96,6 +96,7 @@ import warnings
 import ldm.invoke
 import ldm.invoke.pngwriter
 from ldm.invoke.globals import Globals
+from .paths import InvokePaths
 from ldm.invoke.prompt_parser import split_weighted_subprompts
 
 APP_ID = ldm.invoke.__app_id__
@@ -168,6 +169,10 @@ class Args(object):
         self._cmd_parser   = cmd_parser or self._create_dream_cmd_parser()
         self._arg_switches = self.parse_cmd('')   # fill in defaults
         self._cmd_switches = self.parse_cmd('')   # fill in defaults
+        self.paths = InvokePaths()
+
+
+        print(self.paths.get())
 
     def parse_args(self):
         '''Parse the shell switches and store.'''
@@ -194,6 +199,10 @@ class Args(object):
                 print(f'>> WARNING: Old initialization file found at {legacyinit}. This location is deprecated. Please move it to {Globals.root}/invokeai.init.')
                 sysargs.insert(0,f'@{legacyinit}')
 
+            print(self.paths.get())
+
+
+            sys.exit()
             self._arg_switches = self._arg_parser.parse_args(sysargs)
             return self._arg_switches
         except Exception as e:
@@ -1254,4 +1263,3 @@ def legacy_metadata_load(meta,pathname) -> Args:
             opt.prompt = ''
             opt.seed = 0
     return opt
-
