@@ -77,6 +77,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         ncdu \
         iotop \
         bzip2 \
+        gosu \
         libglib2.0-0 \
         libgl1-mesa-glx \
         python3-venv \
