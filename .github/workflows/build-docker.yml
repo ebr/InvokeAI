@@ -86,7 +86,7 @@ jobs:
         cache-from: |
           type=gha
         cache-to: |
-          type=gha
+          type=gha,mode=max
         context: .
         build-args: |
           GPU_DRIVER=${{ matrix.gpu-driver }}

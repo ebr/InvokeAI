@@ -5,12 +5,10 @@ FROM library/ubuntu:22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt update && apt-get install -y \
         git \
-        libglib2.0-0 \
-        libgl1-mesa-glx \
         python3-venv \
         python3-pip \
         build-essential
@@ -31,7 +29,8 @@ WORKDIR ${INVOKEAI_SRC}
 # NOTE: there are no pytorch builds for arm64 with GPU accelearion
 # Only CPU images are build for ARM currently
 # x86_64/CUDA is the default build
-RUN python3 -m venv ${VIRTUAL_ENV} &&\
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv ${VIRTUAL_ENV} &&\
     if [ "$TARGETPLATFORM" = "linux/arm64" ] || [ "$GPU_DRIVER" = "cpu" ]; then \
         extra_index_url=https://download.pytorch.org/whl/nightly/cpu; \
         torch=$TORCH_VERSION; \
@@ -51,9 +50,14 @@ RUN python3 -m venv ${VIRTUAL_ENV} &&\
     pip install -e git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch
 
 # Install the rest of requirements
-# and the local package (in editable mode)
+# this is done separately to avoid cache busting on unrelated changes in the context
+COPY environments-and-requirements/ environments-and-requirements/
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r environments-and-requirements/requirements-base.txt
+
+# Install the local package (in editable mode)
 COPY . .
-RUN pip install -r environments-and-requirements/requirements-base.txt &&\
+RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -e .
 
 #######################
@@ -64,7 +68,7 @@ FROM library/ubuntu:22.04 as runtime
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt update && apt install -y --no-install-recommends \
         git \
