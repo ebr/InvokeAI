@@ -15,6 +15,16 @@ The image will be built automatically if needed.
 
 The runtime directory (holding models and outputs) will be created in your home directory, under `~/invokeai`, populated with necessary content (you will be asked a couple of questions during setup)
 
+### Use a GPU
+
+- Linux is *recommended* for GPU support in Docker.
+- WSL2 is *required* for Windows.
+- only `x86_64` architecture is supported.
+
+The Docker daemon on the system must be already set up to use the GPU. In case of Linux, this involves installing `nvidia-docker-runtime` and configuring the `nvidia` runtime as default. Steps will be different for AMD. Please see Docker documentation for the most up-to-date instructions for using your GPU with Docker.
+
+If the `nvidia` runtime is not the default on your system, uncomment the `runtime: nvidia` line in `docker-compose.yml` to use your GPU from a container.
+
 ## Customize
 
 Check the `.env` file. It contains environment variables for running in Docker. Fill it in with your own values. Next time you run `docker-compose up`, your custom values will be used.
