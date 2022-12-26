@@ -91,7 +91,6 @@ ENV INVOKEAI_ROOT=/mnt/invokeai
 ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
 
-
 WORKDIR ${INVOKEAI_SRC}
 
 COPY --from=builder ${INVOKEAI_SRC}/ ./
@@ -101,6 +100,9 @@ RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
 RUN python -c "from patchmatch import patch_match"
 
 RUN mv docker/docker-entrypoint.sh ./
+
+# Create unprivileged user
+RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local user" invoke
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["python3", "scripts/invoke.py", "--web", "--host", "0.0.0.0"]
