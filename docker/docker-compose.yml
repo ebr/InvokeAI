@@ -1,0 +1,39 @@
+version: '3'
+
+##############################################################################################
+# Please create a file in this directory named .env (starting with the ".")
+# With the following contents:
+#
+# LOCAL_ROOT_DIR="/path/to/invokeai/directory/where/models/and/outputs/will/be/stored"
+# HUGGINGFACE_TOKEN="<your-token>"
+# GPU_DRIVER="cuda|rocm|cpu"
+#
+# visit https://huggingface.co/settings/tokens to create an access token with READ permissions
+###############################################################################################
+
+services:
+  invokeai:
+    image: "local/invokeai:latest"
+    ## uncomment this for GPU support (Linux/x86_64 only)
+    # runtime: nvidia
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "9090:9090"
+    volumes:
+      - ${LOCAL_ROOT_DIR:-~/invokeai}:/mnt/invokeai
+    tty: true
+    stdin_open: true
+    env_file:
+      - .env
+    ### Below is an example of passing alternative commands/scripts to the container. See documentation for examples.
+    # command:
+    #   - bash
+    #   - -c
+    #   - |
+    #     echo "[$$(date)] exec: $$(ps -p1 -c -h)"
+    #     echo "[$$(date)] whoami: $$(whoami)($$(id -u))"
+    #     echo "[$$(date)] uname: $$(uname -a)"
+    #     # python3 scripts/configure_invokeai.py
+    #     python3 scripts/invoke.py --no-nsfw_checker --web
