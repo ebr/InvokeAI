@@ -15,7 +15,13 @@ services:
   invokeai:
     image: "local/invokeai:latest"
     ## uncomment this for GPU support (Linux/x86_64 only)
-    # runtime: nvidia
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     build:
       context: ..
       dockerfile: docker/Dockerfile
