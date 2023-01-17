@@ -16,8 +16,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ENV INVOKEAI_SRC=/invokeai
 ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ARG TORCH_VERSION=1.13.0
-ARG TORCHVISION_VERSION=0.14.0
+ARG TORCH_VERSION=1.13.1
+ARG TORCHVISION_VERSION=0.14.1
 ARG GPU_DRIVER=cuda
 ARG TARGETPLATFORM
 # unused but available
@@ -40,9 +40,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         torch=$TORCH_VERSION \
         torchvision=$TORCHVISION_VERSION; \
     else \
-        extra_index_url=https://download.pytorch.org/whl/cu116; \
-        torch=$TORCH_VERSION+cu116; \
-        torchvision=$TORCHVISION_VERSION+cu116; \
+        extra_index_url=https://download.pytorch.org/whl/cu117; \
+        torch=$TORCH_VERSION+cu117; \
+        torchvision=$TORCHVISION_VERSION+cu117; \
     fi &&\
     pip install --extra-index-url $extra_index_url \
         torch==$torch \
