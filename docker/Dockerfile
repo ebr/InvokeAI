@@ -32,21 +32,13 @@ WORKDIR ${INVOKEAI_SRC}
 RUN --mount=type=cache,target=/root/.cache/pip \
     python3 -m venv ${VIRTUAL_ENV} &&\
     if [ "$TARGETPLATFORM" = "linux/arm64" ] || [ "$GPU_DRIVER" = "cpu" ]; then \
-        extra_index_url=https://download.pytorch.org/whl/nightly/cpu; \
-        torch=$TORCH_VERSION; \
-        torchvision=$TORCHVISION_VERSION; \
-    elif [ "$GPU_DRIVER" = "rocm"]; then \
-        extra_index_url=https://download.pytorch.org/whl/rocm5.2; \
-        torch=$TORCH_VERSION \
-        torchvision=$TORCHVISION_VERSION; \
-    else \
-        extra_index_url=https://download.pytorch.org/whl/cu117; \
-        torch=$TORCH_VERSION+cu117; \
-        torchvision=$TORCHVISION_VERSION+cu117; \
+        extra_index_url_arg="--extra-index-url https://download.pytorch.org/whl/cpu"; \
+    elif [ "$GPU_DRIVER" = "rocm" ]; then \
+        extra_index_url_arg="--extra-index-url https://download.pytorch.org/whl/rocm5.2"; \
     fi &&\
-    pip install --extra-index-url $extra_index_url \
-        torch==$torch \
-        torchvision==$torchvision &&\
+    pip install $extra_index_url_arg \
+        torch==$TORCH_VERSION \
+        torchvision==$TORCHVISION_VERSION &&\
     pip install -e git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch
 
 # Install the rest of requirements
@@ -56,6 +48,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r environments-and-requirements/requirements-base.txt
 
 # Install the local package (in editable mode)
+# this helps use the same image for development by bind-mounting the local source dir on ${INVOKEAI_SRC}
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -e .
