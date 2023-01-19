@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         build-essential
 
 ENV INVOKEAI_SRC=/invokeai
-ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
+ENV VIRTUAL_ENV=/opt/invokeai/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG TORCH_VERSION=1.13.1
 ARG TORCHVISION_VERSION=0.14.1
@@ -81,16 +81,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 ENV INVOKEAI_SRC=/invokeai
 ENV INVOKEAI_ROOT=/mnt/invokeai
-ENV VIRTUAL_ENV=${INVOKEAI_SRC}/.venv
+ENV VIRTUAL_ENV=/opt/invokeai/venv
 ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
 
 WORKDIR ${INVOKEAI_SRC}
 
-COPY --from=builder ${INVOKEAI_SRC}/ ./
-
 # build patchmatch
 RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
-RUN python -c "from patchmatch import patch_match"
+RUN python3 -c "from patchmatch import patch_match"
 
 RUN mv docker/docker-entrypoint.sh ./
 
