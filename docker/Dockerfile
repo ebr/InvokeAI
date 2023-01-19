@@ -39,7 +39,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install $extra_index_url_arg \
         torch==$TORCH_VERSION \
         torchvision==$TORCHVISION_VERSION &&\
-    pip install -e git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch
+    pip install git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch &&\
+    if [ "$TARGETPLATFORM" = "linux/amd64" ] && [ "$GPU_DRIVER" = "cuda" ]; then \
+        pip install triton xformers==0.0.16rc425; \
+    fi
+
 
 # Install the rest of requirements
 # this is done separately to avoid cache busting on unrelated changes in the context
