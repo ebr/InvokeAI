@@ -41,6 +41,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://invoke-ai.github.io/InvokeAI/features/MODEL_MERGING/</loc>
+         <lastmod>2023-01-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://invoke-ai.github.io/InvokeAI/features/NSFW/</loc>
          <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
@@ -127,6 +132,11 @@
     </url>
     <url>
          <loc>https://invoke-ai.github.io/InvokeAI/installation/060_INSTALL_PATCHMATCH/</loc>
+         <lastmod>2023-01-26</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://invoke-ai.github.io/InvokeAI/installation/070_INSTALL_XFORMERS/</loc>
          <lastmod>2023-01-26</lastmod>
          <changefreq>daily</changefreq>
     </url>
