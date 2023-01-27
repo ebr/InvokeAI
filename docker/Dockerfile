@@ -27,7 +27,7 @@ WORKDIR ${INVOKEAI_SRC}
 
 # Install pytorch before all other pip packages
 # NOTE: there are no pytorch builds for arm64 with GPU accelearion
-# Only CPU images are build for ARM currently
+# Only CPU images are built for ARM currently
 # x86_64/CUDA is the default build
 RUN --mount=type=cache,target=/root/.cache/pip \
     python3 -m venv ${VIRTUAL_ENV} &&\
@@ -44,15 +44,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         pip install triton xformers==0.0.16rc425; \
     fi
 
-
-# Install the rest of requirements
-# this is done separately to avoid cache busting on unrelated changes in the context
-COPY environments-and-requirements/ environments-and-requirements/
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r environments-and-requirements/requirements-base.txt
-
-# Install the local package (in editable mode)
-# this helps use the same image for development by bind-mounting the local source dir on ${INVOKEAI_SRC}
+# Install the local package.
+# Editable mode helps use the same image for development:
+# the local working copy can be bind-mounted into the image
+# at path defined by ${INVOKEAI_SRC}
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -e .
@@ -107,4 +102,4 @@ RUN mv docker/docker-entrypoint.sh ./
 RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local user" invoke
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["python3", "scripts/invoke.py", "--web", "--host", "0.0.0.0"]
+CMD ["invoke", "--web", "--host", "0.0.0.0"]

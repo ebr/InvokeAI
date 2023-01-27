@@ -1,14 +1,10 @@
 *
 !backend
-!environments-and-requirements
 !frontend
 !ldm
-!main.py
 !scripts
-!server
 !static
-!setup.py
-!configs
+!pyproject.toml
 !docker/docker-entrypoint.sh
 
 **/__pycache__

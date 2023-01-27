@@ -30,12 +30,12 @@ usermod -u ${USER_ID} ${USER} 1>/dev/null
 setup() {
     # testing for model files and config file is sufficient to determine if we need to configure
     # if this test falls though, the internal emergency_model_reconfigure will be the fallback
-    if [[ ! -d "${INVOKEAI_ROOT}/models/ldm/stable-diffusion-v1" ]] ||
-    [[ -z $(ls -A "${INVOKEAI_ROOT}/models/ldm/stable-diffusion-v1") ]] ||
+    if [[ ! -d "${INVOKEAI_ROOT}/models" ]] ||
+    [[ -z $(ls -A "${INVOKEAI_ROOT}/models") ]] ||
     [[ ! -f "${INVOKEAI_ROOT}/invokeai.init" ]]; then
         mkdir -p ${INVOKEAI_ROOT}
         chown ${USER} ${INVOKEAI_ROOT} || true
-        gosu ${USER} python3 ./scripts/configure_invokeai.py --yes
+        gosu ${USER} configure_invokeai --yes
     fi
 }
 
