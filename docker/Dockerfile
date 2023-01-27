@@ -89,6 +89,10 @@ ENV VIRTUAL_ENV=/opt/invokeai/venv
 ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+# add magic-wormhole for easier sending/receiving of files when running in limited cloud provider environments
+RUN pip install magic-wormhole
+
 COPY --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
 
 WORKDIR ${INVOKEAI_SRC}
