@@ -7,4 +7,6 @@
 !pyproject.toml
 !docker/docker-entrypoint.sh
 
+!configs
+
 **/__pycache__

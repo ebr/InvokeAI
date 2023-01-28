@@ -28,7 +28,9 @@ initialize() {
     [[ -z $(ls -A "${INVOKEAI_ROOT}/models") ]] ||
     [[ ! -f "${INVOKEAI_ROOT}/invokeai.init" ]]; then
         mkdir -p ${INVOKEAI_ROOT}
-        chown ${USER} ${INVOKEAI_ROOT} || true
+	### temporary until new installer is merged
+	cp -r configs ${INVOKEAI_ROOT}
+        chown --recursive ${USER} ${INVOKEAI_ROOT} || true
         gosu ${USER} configure_invokeai --yes
     fi
 }
