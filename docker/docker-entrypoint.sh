@@ -12,7 +12,7 @@ set -eu -o pipefail
 #
 # Setting the CONTAINER_UID envvar will ensure that any files created by the container in a mounted volume
 # are owned by the given UID:
-#   docker run --rm -it -v /some/path:/mnt/invokeai -e CONTAINER_UID=$(id -u) <this image>
+#   docker run --rm -it -v /some/path:/invokeai -e CONTAINER_UID=$(id -u) <this image>
 ########################################################################################################################
 
 # Change the unprivileged user's UID to the given UID
@@ -54,9 +54,6 @@ if [[ -v "PUBLIC_KEY" ]] && [[ ! -d "${HOME}/.ssh" ]]; then
     popd
     service ssh start
 fi
-
-# This is set in the Dockerfile
-cd ${INVOKEAI_SRC}
 
 # special switch will skip all preflight checks and runtime dir initialization
 if [[ $1 != "--skip-setup" ]]; then
