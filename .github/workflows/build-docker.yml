@@ -26,8 +26,8 @@ jobs:
         # arm64 cuda, rocm and cpu images are all CPU!
         # there is no accelerated torch/arm64 build at the moment
           - cuda
-          - rocm
-          - cpu
+          # - rocm
+          # - cpu
     runs-on: ubuntu-latest
     name: ${{ matrix.gpu-driver }}
     steps:
