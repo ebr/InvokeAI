@@ -13,8 +13,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         python3-pip \
         build-essential
 
-ENV INVOKEAI_SRC=/invokeai
-ENV VIRTUAL_ENV=/opt/invokeai/venv
+ENV INVOKEAI_SRC=/opt/invokeai
+ENV VIRTUAL_ENV=/opt/venv/invokeai
+
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ARG TORCH_VERSION=1.13.1
 ARG TORCHVISION_VERSION=0.14.1
@@ -77,15 +78,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         libopencv-dev &&\
     apt-get clean && apt-get autoclean
 
-ENV INVOKEAI_SRC=/invokeai
-ENV INVOKEAI_ROOT=/mnt/invokeai
-ENV VIRTUAL_ENV=/opt/invokeai/venv
-ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
-
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-
-# add magic-wormhole for easier sending/receiving of files when running in limited cloud provider environments
+# globally add magic-wormhole for ease of transferring data
+# to and from the container when running in limited cloud provider environments
 RUN pip install magic-wormhole
+
+ENV INVOKEAI_SRC=/opt/invokeai
+ENV VIRTUAL_ENV=/opt/venv/invokeai
+ENV INVOKEAI_ROOT=/invokeai
+ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
 
 COPY --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
@@ -96,10 +96,11 @@ WORKDIR ${INVOKEAI_SRC}
 RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
 RUN python3 -c "from patchmatch import patch_match"
 
-RUN mv docker/docker-entrypoint.sh ./
-
 # Create unprivileged user
 RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local user" invoke
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["invoke", "--web", "--host", "0.0.0.0"]
+RUN mv docker/docker-entrypoint.sh ./
+ENTRYPOINT ["/opt/invokeai/docker-entrypoint.sh"]
+CMD ["invokeai", "--web", "--host", "0.0.0.0"]
+
+WORKDIR ${INVOKEAI_ROOT}

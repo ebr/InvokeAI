@@ -16,8 +16,7 @@ services:
       dockerfile: docker/Dockerfile
 
     ### Set these values as desired
-    env:
-
+    environment:
       ### visit https://huggingface.co/settings/tokens to create an access token with READ permissions
       # HUGGINGFACE_TOKEN: hf_xxxxxxxxxxxxxxx
 
@@ -38,7 +37,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ${LOCAL_ROOT_DIR:-~/invokeai}:/mnt/invokeai
+      - ${LOCAL_ROOT_DIR:-~/invokeai}:/invokeai
     tty: true
     stdin_open: true
     ### Below is an example of passing alternative commands/scripts to the container. See documentation for examples.
