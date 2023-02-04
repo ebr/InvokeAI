@@ -29,10 +29,12 @@ If the `nvidia` runtime is not the default on your system, uncomment the `runtim
 
 Check the `.env` file. It contains environment variables for running in Docker. Fill it in with your own values. Next time you run `docker-compose up`, your custom values will be used.
 
+You can also set these values in `docker-compose.yml` directly, but `.env` will help avoid conflicts when code is updated.
+
 Example:
 
 ```
-LOCAL_ROOT_DIR=D:\HugeDrive\invokeai
+LOCAL_ROOT_DIR=/Volumes/HugeDrive/invokeai
 HUGGINGFACE_TOKEN=the_actual_token
 CONTAINER_UID=1000
 GPU_DRIVER=cuda
@@ -47,10 +49,10 @@ See the `docker-compose.yaml` file. The `command` instruction can be uncommented
 
 ```
 command:
-  - python3
-  - scripts/invoke.py
+  - invokeai
   - --no-nsfw_check
   - --web
+  - --host 0.0.0.0
 ```
 
 
@@ -62,8 +64,7 @@ In conjunction with `LOCAL_ROOT_DIR` can be also used to create bran
 
 ```
 command:
-  - python3
-  - scripts/configure_invokeai.py
+  - invokeai-configure
   - --yes
 ```
 
@@ -76,15 +77,15 @@ Override the `command` and run `docker compose:
 
 ```
 command:
-   - python3
-   - scripts/invoke.py
+   - invoke
 ```
 
 Then attach to the container from another terminal:
 
 ```
 $ docker attach $(docker compose ps invokeai -q)
+
 invoke>
 ```
 
-Enjoy the `invoke>` prompt. To detach from the container, type `Ctrl+P` followed by `Ctrl+Q` (this is the escape sequence).
+Enjoy using the `invoke>` prompt. To detach from the container, type `Ctrl+P` followed by `Ctrl+Q` (this is the escape sequence).

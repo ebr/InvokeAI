@@ -1,10 +1,11 @@
 *
-!backend
-!frontend
+!invokeai/frontend/dist
+!invokeai/assets/web
+!invokeai/configs
+!invokeai/backend
 !ldm
-!scripts
-!static
 !pyproject.toml
 !docker/docker-entrypoint.sh
+!LICENSE
 
 **/__pycache__
