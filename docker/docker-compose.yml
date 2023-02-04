@@ -1,16 +1,5 @@
 version: '3'
 
-##############################################################################################
-# Please create a file in this directory named .env (starting with the ".")
-# With the following contents:
-#
-# LOCAL_ROOT_DIR="/path/to/invokeai/directory/where/models/and/outputs/will/be/stored"
-# HUGGINGFACE_TOKEN="<your-token>"
-# GPU_DRIVER="cuda|rocm|cpu"
-#
-# visit https://huggingface.co/settings/tokens to create an access token with READ permissions
-###############################################################################################
-
 services:
   invokeai:
     image: "local/invokeai:latest"
@@ -25,14 +14,33 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+
+    ### Set these values as desired
+    env:
+
+      ### visit https://huggingface.co/settings/tokens to create an access token with READ permissions
+      # HUGGINGFACE_TOKEN: hf_xxxxxxxxxxxxxxx
+
+      # LOCAL_ROOT_DIR is the path on the host filesystem where to mount the InvokeAI runtime directory
+      # LOCAL_ROOT_DIR: /Volumes/Data/invokeai
+
+      # GPU_DRIVER defaults to `cuda`, may also equal 'cpu', or 'rocm' (untested). Used at image build time.
+      # GPU_DRIVER: cuda
+
+      # CONTAINER_UID must correspond to your user ID on the host system, so that the files created by
+      # the container are owned by your user. Will likely be 1000 on Linux and 501 on Mac.
+      # confirm this value by running `id -u`
+      CONTAINER_UID: 1000
+
+    ### And/or use an .env file in this directory to set environment variables (see example.env)
+    env_file:
+      - .env
     ports:
       - "9090:9090"
     volumes:
       - ${LOCAL_ROOT_DIR:-~/invokeai}:/mnt/invokeai
     tty: true
     stdin_open: true
-    env_file:
-      - .env
     ### Below is an example of passing alternative commands/scripts to the container. See documentation for examples.
     # command:
     #   - bash

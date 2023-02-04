@@ -35,14 +35,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         extra_index_url_arg="--extra-index-url https://download.pytorch.org/whl/cpu"; \
     elif [ "$GPU_DRIVER" = "rocm" ]; then \
         extra_index_url_arg="--extra-index-url https://download.pytorch.org/whl/rocm5.2"; \
+    else \
+        extra_index_url_arg="--extra-index-url https://download.pytorch.org/whl/cu117"; \
     fi &&\
     pip install $extra_index_url_arg \
         torch==$TORCH_VERSION \
-        torchvision==$TORCHVISION_VERSION &&\
-    pip install git+https://github.com/invoke-ai/PyPatchMatch@0.1.3#egg=pypatchmatch &&\
-    if [ "$TARGETPLATFORM" = "linux/amd64" ] && [ "$GPU_DRIVER" = "cuda" ]; then \
-        pip install triton xformers==0.0.16rc425; \
-    fi
+        torchvision==$TORCHVISION_VERSION
 
 # Install the local package.
 # Editable mode helps use the same image for development:
@@ -50,7 +48,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # at path defined by ${INVOKEAI_SRC}
 COPY . .
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -e .
+    pip install -e ".[xformers]"
 
 #######################
 #### Runtime stage ####
@@ -59,6 +57,7 @@ FROM library/ubuntu:22.04 as runtime
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -89,6 +88,7 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 RUN pip install magic-wormhole
 
 COPY --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 WORKDIR ${INVOKEAI_SRC}
 
