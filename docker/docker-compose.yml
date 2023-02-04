@@ -48,5 +48,5 @@ services:
     #     echo "[$$(date)] exec: $$(ps -p1 -c -h)"
     #     echo "[$$(date)] whoami: $$(whoami)($$(id -u))"
     #     echo "[$$(date)] uname: $$(uname -a)"
-    #     # python3 scripts/configure_invokeai.py
-    #     python3 scripts/invoke.py --no-nsfw_checker --web
+    #     # invokeai-configure
+    #     invokeai --no-nsfw_checker --web

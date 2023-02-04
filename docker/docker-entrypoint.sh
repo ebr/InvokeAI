@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu -o pipefail
+set -e -o pipefail
 
 #######################################################################################################################
 # This entrypoint script will by default try to configure the InvokeAI runtime directory first, if necessary.
@@ -8,7 +8,7 @@ set -eu -o pipefail
 # this entrypoint can be bypassed by overriding the ENTRYPOINT directive.
 #
 # Passing the --skip-setup CLI switch will bypass the config directory "preflight check" completely:
-#   docker run --rm -it <this image> --skip-setup python3 scripts/invokeai.py
+#   docker run --rm -it <this image> --skip-setup invokeai
 #
 # Setting the CONTAINER_UID envvar will ensure that any files created by the container in a mounted volume
 # are owned by the given UID:
@@ -34,8 +34,8 @@ setup() {
     [[ -z $(ls -A "${INVOKEAI_ROOT}/models") ]] ||
     [[ ! -f "${INVOKEAI_ROOT}/invokeai.init" ]]; then
         mkdir -p ${INVOKEAI_ROOT}
-        chown ${USER} ${INVOKEAI_ROOT} || true
-        gosu ${USER} configure_invokeai --yes
+        chown --recursive ${USER} ${INVOKEAI_ROOT} || true
+        gosu ${USER} invokeai-configure --yes
     fi
 }
 
