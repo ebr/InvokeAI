@@ -3,14 +3,14 @@ version: '3'
 services:
   invokeai:
     image: "local/invokeai:latest"
-    ## uncomment this for GPU support (Linux/x86_64 only)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    ## comment this out to run on CPU only where NVidia GPU support is unavailable or nvidia-container-toolkit is not installed
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     build:
       context: ..
       dockerfile: docker/Dockerfile
