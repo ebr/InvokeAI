@@ -47,9 +47,16 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Editable mode helps use the same image for development:
 # the local working copy can be bind-mounted into the image
 # at path defined by ${INVOKEAI_SRC}
-COPY . .
+COPY ldm ./ldm
+COPY invokeai ./invokeai
+COPY pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -e ".[xformers]"
+    if [ "$GPU_DRIVER" = "cuda" ] && [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+        pip install -e ".[xformers]"; \
+    else \
+        pip install -e "."; \
+    fi
+
 
 #######################
 #### Runtime stage ####
@@ -99,7 +106,7 @@ RUN python3 -c "from patchmatch import patch_match"
 # Create unprivileged user
 RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local user" invoke
 
-RUN mv docker/docker-entrypoint.sh ./
+COPY docker/docker-entrypoint.sh ./
 ENTRYPOINT ["/opt/invokeai/docker-entrypoint.sh"]
 CMD ["invokeai", "--web", "--host", "0.0.0.0"]
 
