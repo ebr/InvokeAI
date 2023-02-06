@@ -73,6 +73,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         git \
         curl \
         vim \
+        tmux \
         ncdu \
         iotop \
         bzip2 \
