@@ -21,12 +21,6 @@ USER=invoke
 USER_ID=${CONTAINER_UID:-1000}
 usermod -u ${USER_ID} ${USER} 1>/dev/null
 
-# Change the unprivileged user's UID to the given UID
-# UID 1000 is chosen as default due to popularity
-USER=invoke
-USER_ID=${CONTAINER_UID:-1000}
-usermod -u ${USER_ID} ${USER} 1>/dev/null
-
 setup() {
     # testing for model files and config file is sufficient to determine if we need to configure
     # if this test falls though, the internal emergency_model_reconfigure will be the fallback
@@ -61,5 +55,7 @@ if [[ $1 != "--skip-setup" ]]; then
 else
     shift
 fi
+
+cd ${INVOKEAI_ROOT}
 
 exec gosu ${USER} "$@"

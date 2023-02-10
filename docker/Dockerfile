@@ -110,5 +110,3 @@ RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local u
 COPY docker/docker-entrypoint.sh ./
 ENTRYPOINT ["/opt/invokeai/docker-entrypoint.sh"]
 CMD ["invokeai", "--web", "--host", "0.0.0.0"]
-
-WORKDIR ${INVOKEAI_ROOT}
