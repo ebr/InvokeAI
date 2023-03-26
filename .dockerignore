@@ -1,8 +1,5 @@
 *
-!invokeai/frontend/dist
-!invokeai/assets/web
-!invokeai/configs
-!invokeai/backend
+!invokeai
 !ldm
 !pyproject.toml
 !docker/docker-entrypoint.sh
