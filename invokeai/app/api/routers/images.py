@@ -3,9 +3,10 @@
 from datetime import datetime, timezone
 
 from fastapi import Path, Request, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response, StreamingResponse
 from fastapi.routing import APIRouter
 from PIL import Image
+from io import BytesIO
 
 from ...services.image_storage import ImageType
 from ..dependencies import ApiDependencies
@@ -19,9 +20,14 @@ async def get_image(
     image_name: str = Path(description="The name of the image to get"),
 ):
     """Gets a result"""
-    # TODO: This is not really secure at all. At least make sure only output results are served
-    filename = ApiDependencies.invoker.services.images.get_path(image_type, image_name)
-    return FileResponse(filename)
+    image = ApiDependencies.invoker.services.images.get(image_type, image_name)
+
+    # return the image from memory
+    resp = BytesIO()
+    image.save(resp, "PNG")
+    resp.seek(0)
+
+    return StreamingResponse(resp, media_type="image/png")
 
 
 @images_router.post(
