@@ -38,8 +38,10 @@ export const socketMiddleware = () => {
   // if building in package mode, replace socket url with open api base url minus the http protocol
   if (import.meta.env.MODE === 'package') {
     if (OpenAPI.BASE) {
+      const parts = OpenAPI.BASE.split('://');
+      const scheme = parts[0].endsWith('s') ? 'wss' : 'ws';
       //eslint-disable-next-line
-      socket_url = OpenAPI.BASE.replace(/^https?\:\/\//i, '');
+      socket_url = `${scheme}://${parts[1]}`;
     }
 
     if (OpenAPI.TOKEN) {
