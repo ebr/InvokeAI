@@ -2,7 +2,6 @@
 
 import copy
 import itertools
-import traceback
 import uuid
 from types import NoneType
 from typing import (
@@ -750,7 +749,7 @@ class Graph(BaseModel):
 class GraphExecutionState(BaseModel):
     """Tracks the state of a graph execution"""
 
-    id: str = Field(
+    id: uuid.UUID = Field(
         description="The id of the execution state", default_factory=uuid.uuid4
     )
 
