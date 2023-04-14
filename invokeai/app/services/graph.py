@@ -25,7 +25,6 @@ from ..invocations.baseinvocation import (
     BaseInvocationOutput,
     InvocationContext,
 )
-from .invocation_services import InvocationServices
 
 
 class EdgeConnection(BaseModel):
@@ -214,7 +213,7 @@ InvocationOutputsUnion = Union[BaseInvocationOutput.get_all_subclasses_tuple()] 
 
 
 class Graph(BaseModel):
-    id: str = Field(description="The id of this graph", default_factory=uuid.uuid4)
+    id: str = Field(description="The id of this graph", default_factory=lambda: uuid.uuid4().__str__())
     # TODO: use a list (and never use dict in a BaseModel) because pydantic/fastapi hates me
     nodes: dict[str, Annotated[InvocationsUnion, Field(discriminator="type")]] = Field(
         description="The nodes in this graph", default_factory=dict
@@ -749,8 +748,8 @@ class Graph(BaseModel):
 class GraphExecutionState(BaseModel):
     """Tracks the state of a graph execution"""
 
-    id: uuid.UUID = Field(
-        description="The id of the execution state", default_factory=uuid.uuid4
+    id: str = Field(
+        description="The id of the execution state", default_factory=lambda: uuid.uuid4().__str__()
     )
 
     # TODO: Store a reference to the graph instead of the actual graph?
@@ -1170,7 +1169,7 @@ class LibraryGraph(BaseModel):
         if len(v) != len(set(i.alias for i in v)):
             raise ValueError("Duplicate exposed alias")
         return v
-    
+
     @root_validator
     def validate_exposed_nodes(cls, values):
         graph = values['graph']
