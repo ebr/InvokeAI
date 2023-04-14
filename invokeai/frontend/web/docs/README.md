@@ -1,10 +1,16 @@
 # InvokeAI Web UI
 
+- [InvokeAI Web UI](#invokeai-web-ui)
+  - [Stack](#stack)
+  - [Contributing](#contributing)
+    - [Dev Environment](#dev-environment)
+    - [Production builds](#production-builds)
+
 The UI is a fairly straightforward Typescript React app. The only really fancy stuff is the Unified Canvas.
 
 Code in `invokeai/frontend/web/` if you want to have a look.
 
-## Details
+## Stack
 
 State management is Redux via [Redux Toolkit](https://github.com/reduxjs/redux-toolkit). Communication with server is a mix of HTTP and [socket.io](https://github.com/socketio/socket.io-client) (with a custom redux middleware to help).
 
@@ -32,7 +38,7 @@ Start everything in dev mode:
 
 1. Start the dev server: `yarn dev`
 2. Start the InvokeAI UI per usual: `invokeai --web`
-3. Point your browser to the dev server address e.g. `http://localhost:5173/`
+3. Point your browser to the dev server address e.g. <http://localhost:5173/>
 
 ### Production builds
 

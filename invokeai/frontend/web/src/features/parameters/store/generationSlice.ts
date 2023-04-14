@@ -11,7 +11,7 @@ export interface GenerationState {
   height: number;
   img2imgStrength: number;
   infillMethod: string;
-  initialImage?: InvokeAI.Image | string; // can be an Image or url
+  initialImage?: InvokeAI._Image | string; // can be an Image or url
   iterations: number;
   maskPath: string;
   perlin: number;
@@ -317,12 +317,12 @@ export const generationSlice = createSlice({
     setShouldRandomizeSeed: (state, action: PayloadAction<boolean>) => {
       state.shouldRandomizeSeed = action.payload;
     },
-    setInitialImage: (
-      state,
-      action: PayloadAction<InvokeAI.Image | string>
-    ) => {
-      state.initialImage = action.payload;
-    },
+    // setInitialImage: (
+    //   state,
+    //   action: PayloadAction<InvokeAI._Image | string>
+    // ) => {
+    //   state.initialImage = action.payload;
+    // },
     clearInitialImage: (state) => {
       state.initialImage = undefined;
     },
@@ -353,6 +353,9 @@ export const generationSlice = createSlice({
     setVerticalSymmetrySteps: (state, action: PayloadAction<number>) => {
       state.verticalSymmetrySteps = action.payload;
     },
+    initialImageSelected: (state, action: PayloadAction<string>) => {
+      state.initialImage = action.payload;
+    },
   },
 });
 
@@ -368,7 +371,7 @@ export const {
   setHeight,
   setImg2imgStrength,
   setInfillMethod,
-  setInitialImage,
+  // setInitialImage,
   setIterations,
   setMaskPath,
   setParameter,
@@ -394,6 +397,7 @@ export const {
   setShouldUseSymmetry,
   setHorizontalSymmetrySteps,
   setVerticalSymmetrySteps,
+  initialImageSelected,
 } = generationSlice.actions;
 
 export default generationSlice.reducer;

@@ -1,5 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
+import { initialImageSelected } from 'features/parameters/store/generationSlice';
+import { setActiveTabReducer } from './extraReducers';
 import { InvokeTabName, tabMap } from './tabMap';
 import { AddNewModelType, UIState } from './uiTypes';
 
@@ -16,6 +18,8 @@ const initialtabsState: UIState = {
   addNewModelUIOption: null,
   shouldPinGallery: true,
   shouldShowGallery: true,
+  disabledParameterPanels: [],
+  disabledTabs: [],
 };
 
 const initialState: UIState = initialtabsState;
@@ -25,11 +29,7 @@ export const uiSlice = createSlice({
   initialState,
   reducers: {
     setActiveTab: (state, action: PayloadAction<number | InvokeTabName>) => {
-      if (typeof action.payload === 'number') {
-        state.activeTab = action.payload;
-      } else {
-        state.activeTab = tabMap.indexOf(action.payload);
-      }
+      setActiveTabReducer(state, action.payload);
     },
     setCurrentTheme: (state, action: PayloadAction<string>) => {
       state.currentTheme = action.payload;
@@ -92,6 +92,19 @@ export const uiSlice = createSlice({
         state.shouldShowParametersPanel = true;
       }
     },
+    setDisabledPanels: (state, action: PayloadAction<string[]>) => {
+      state.disabledParameterPanels = action.payload;
+    },
+    setDisabledTabs: (state, action: PayloadAction<InvokeTabName[]>) => {
+      state.disabledTabs = action.payload;
+    },
+  },
+  extraReducers(builder) {
+    builder.addCase(initialImageSelected, (state) => {
+      if (tabMap[state.activeTab] !== 'img2img') {
+        setActiveTabReducer(state, 'img2img');
+      }
+    });
   },
 });
 
@@ -113,6 +126,8 @@ export const {
   togglePinParametersPanel,
   toggleParametersPanel,
   toggleGalleryPanel,
+  setDisabledPanels,
+  setDisabledTabs,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

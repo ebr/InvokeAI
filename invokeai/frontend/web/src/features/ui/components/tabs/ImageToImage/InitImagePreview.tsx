@@ -1,18 +1,18 @@
 import { Flex, Image, Text, useToast } from '@chakra-ui/react';
-import { RootState } from 'app/store';
 import { useAppDispatch, useAppSelector } from 'app/storeHooks';
 import ImageUploaderIconButton from 'common/components/ImageUploaderIconButton';
+import { useGetUrl } from 'common/util/getUrl';
+import { initialImageSelector } from 'features/parameters/store/generationSelectors';
 import { clearInitialImage } from 'features/parameters/store/generationSlice';
 import { useTranslation } from 'react-i18next';
 
 export default function InitImagePreview() {
-  const initialImage = useAppSelector(
-    (state: RootState) => state.generation.initialImage
-  );
+  const initialImage = useAppSelector(initialImageSelector);
 
   const { t } = useTranslation();
 
   const dispatch = useAppDispatch();
+  const { getUrl } = useGetUrl();
 
   const toast = useToast();
 
@@ -66,7 +66,9 @@ export default function InitImagePreview() {
               position: 'absolute',
             }}
             src={
-              typeof initialImage === 'string' ? initialImage : initialImage.url
+              typeof initialImage === 'string'
+                ? getUrl(initialImage)
+                : getUrl(initialImage.url)
             }
             onError={alertMissingInitImage}
           />
