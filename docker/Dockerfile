@@ -47,7 +47,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Editable mode helps use the same image for development:
 # the local working copy can be bind-mounted into the image
 # at path defined by ${INVOKEAI_SRC}
-COPY ldm ./ldm
 COPY invokeai ./invokeai
 COPY pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -56,7 +55,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     else \
         pip install -e "."; \
     fi
-
 
 #######################
 #### Runtime stage ####
@@ -87,7 +85,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get clean && apt-get autoclean
 
 # globally add magic-wormhole for ease of transferring data
-# to and from the container when running in limited cloud provider environments
+# to and from the container when running in sandboxed cloud environments, e.g. Runpod
 RUN pip install magic-wormhole
 
 ENV INVOKEAI_SRC=/opt/invokeai

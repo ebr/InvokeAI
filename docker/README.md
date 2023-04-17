@@ -1,14 +1,24 @@
-# InvokeAI in a Docker Container
+# InvokeAI Containerized
 
 All commands are to be run from the `docker` directory: `cd docker`
 
-Linux users might need to  `sudo apt install docker-compose-plugin` (if errors about lack of buildkit support prevent the build)
+Linux
 
-Mac users: 1) Ensure Docker has at least 16GB RAM; 2) Enable VirtioFS for file sharing; 3) enable "`docker-compose` V2" support
+1. Ensure builkit is enabled in the Docker daemon settings (`/etc/docker/daemon.json`)
+2. Install `docker-compose`
+3. Ensure docker daemon is able to access the GPU.
+
+macOS
+
+1. Ensure Docker has at least 16GB RAM
+2. Enable VirtioFS for file sharing
+3. Enable `docker-compose` V2 support
+
+This is done via Docker Desktop preferences
 
 ## Quickstart
 
-1. Make a copy of `example.env` and name it `.env` (`cp example.env .env` (Mac/Linux) or `copy example.env .env` (Windows))
+1. Make a copy of `env.sample` and name it `.env` (`cp env.sample .env` (Mac/Linux) or `copy example.env .env` (Windows)). Make changes as necessary.
 2. `docker-compose up`
 
 The image will be built automatically if needed.
@@ -22,8 +32,6 @@ The runtime directory (holding models and outputs) will be created in your home 
 - only `x86_64` architecture is supported.
 
 The Docker daemon on the system must be already set up to use the GPU. In case of Linux, this involves installing `nvidia-docker-runtime` and configuring the `nvidia` runtime as default. Steps will be different for AMD. Please see Docker documentation for the most up-to-date instructions for using your GPU with Docker.
-
-If the `nvidia` runtime is not the default on your system, uncomment the `runtime: nvidia` line in `docker-compose.yml` to use your GPU from a container.
 
 ## Customize
 

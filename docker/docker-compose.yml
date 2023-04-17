@@ -1,9 +1,10 @@
-version: '3'
+version: '3.8'
 
 services:
   invokeai:
     image: "local/invokeai:latest"
-    ## comment this out to run on CPU only where NVidia GPU support is unavailable or nvidia-container-toolkit is not installed
+    ## edit this to run on a container runtime other than NVIDIA.
+    ## not yettested with rocm/AMD GPUs
     deploy:
       resources:
         reservations:
@@ -15,29 +16,14 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
 
-    ### Set these values as desired
-    environment:
-      ### visit https://huggingface.co/settings/tokens to create an access token with READ permissions
-      # HUGGINGFACE_TOKEN: hf_xxxxxxxxxxxxxxx
-
-      # LOCAL_ROOT_DIR is the path on the host filesystem where to mount the InvokeAI runtime directory
-      # LOCAL_ROOT_DIR: /Volumes/Data/invokeai
-
-      # GPU_DRIVER defaults to `cuda`, may also equal 'cpu', or 'rocm' (untested). Used at image build time.
-      # GPU_DRIVER: cuda
-
-      # CONTAINER_UID must correspond to your user ID on the host system, so that the files created by
-      # the container are owned by your user. Will likely be 1000 on Linux and 501 on Mac.
-      # confirm this value by running `id -u`
-      CONTAINER_UID: 1000
-
-    ### And/or use an .env file in this directory to set environment variables (see example.env)
+    # Create a .env file in the same directory as this docker-compose.yml file
     env_file:
       - .env
+
     ports:
-      - "9090:9090"
+      - "${INVOKEAI_PORT:-9090}:9090"
     volumes:
-      - ${LOCAL_ROOT_DIR:-~/invokeai}:/invokeai
+      - ${HOST_INVOKEAI_ROOT:-~/invokeai}:/invokeai
     tty: true
     stdin_open: true
     ### Below is an example of passing alternative commands/scripts to the container. See documentation for examples.
@@ -46,7 +32,5 @@ services:
     #   - -c
     #   - |
     #     echo "[$$(date)] exec: $$(ps -p1 -c -h)"
-    #     echo "[$$(date)] whoami: $$(whoami)($$(id -u))"
-    #     echo "[$$(date)] uname: $$(uname -a)"
-    #     # invokeai-configure
-    #     invokeai --no-nsfw_checker --web
+    #     invokeai-model-install --yes --default-only --config_file ${INVOKEAI_ROOT}/config_custom.yaml
+    #     invokeai-nodes-web --host 0.0.0.0
