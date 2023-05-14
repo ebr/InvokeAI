@@ -4,7 +4,7 @@ services:
   invokeai:
     image: "local/invokeai:latest"
     ## edit this to run on a container runtime other than NVIDIA.
-    ## not yettested with rocm/AMD GPUs
+    ## not yet tested with rocm/AMD GPUs
     deploy:
       resources:
         reservations:
