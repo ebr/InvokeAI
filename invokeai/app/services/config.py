@@ -309,7 +309,7 @@ class InvokeAISettings(BaseSettings):
             )
 def _find_root()->Path:
     if os.environ.get("INVOKEAI_ROOT"):
-        root = Path(os.environ.get("INVOKEAI_ROOT")).resolve()
+        root = Path(os.environ.get("INVOKEAI_ROOT")).expanduser().resolve()
     elif (
             os.environ.get("VIRTUAL_ENV")
             and (Path(os.environ.get("VIRTUAL_ENV"), "..", INIT_FILE).exists()
