@@ -53,12 +53,10 @@ class ApiDependencies:
 
         events = FastAPIEventService(event_handler_id)
 
-        output_folder = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../../../outputs")
-        )
+        output_path = config.output_path
 
         # TODO: build a file/path manager?
-        db_location = os.path.join(output_folder, "invokeai.db")
+        db_location = os.path.join(output_path, "invokeai.db")
 
         graph_execution_manager = SqliteItemStorage[GraphExecutionState](
             filename=db_location, table_name="graph_executions"
@@ -67,10 +65,10 @@ class ApiDependencies:
         urls = LocalUrlService()
         metadata = CoreMetadataService()
         image_record_storage = SqliteImageRecordStorage(db_location)
-        image_file_storage = DiskImageFileStorage(f"{output_folder}/images")
+        image_file_storage = DiskImageFileStorage(f"{output_path}/images")
         names = SimpleNameService()
         latents = ForwardCacheLatentsStorage(
-            DiskLatentsStorage(f"{output_folder}/latents")
+            DiskLatentsStorage(f"{output_path}/latents")
         )
 
         images = ImageService(
