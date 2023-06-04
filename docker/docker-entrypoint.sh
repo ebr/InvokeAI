@@ -1,43 +1,39 @@
 #!/bin/bash
 set -e -o pipefail
 
-#######################################################################################################################
-# This entrypoint script will by default try to configure the InvokeAI runtime directory first, if necessary.
+# This script will configure the InvokeAI runtime directory first, if necessary.
 # It will then run the CMD as defined by the Dockerfile, unless overridden.
-# Where automatic configuration and/or dropping into the unprivileged user is not desirable at all,
-# this entrypoint can be bypassed by overriding the ENTRYPOINT directive.
+# Override using `docker run --entrypoint ...` to bypass this script.
 #
-# Passing the --skip-setup CLI switch will bypass the config directory "preflight check" completely:
+# Pass the --skip-setup CLI switch to bypass the config directory "preflight check":
 #   docker run --rm -it <this image> --skip-setup invokeai
+# Ensure that the INVOKEAI_ROOT envvar points to a valid runtime directory in this case.
 #
-# Setting the CONTAINER_UID envvar will ensure that any files created by the container in a mounted volume
-# are owned by the given UID:
+# Set the CONTAINER_UID envvar (optional) to ensure that any files
+# created by the container are owned by the given UID:
 #   docker run --rm -it -v /some/path:/invokeai -e CONTAINER_UID=$(id -u) <this image>
-########################################################################################################################
+# User ID 1000 is chosen as default due to popularity on Linux systems, but you can
+# change it if different on your system. It might be 501 on MacOS.
 
-# Change the unprivileged user's UID to the given UID
-# UID 1000 is chosen as default due to popularity
-USER=invoke
 USER_ID=${CONTAINER_UID:-1000}
+USER=invoke
 usermod -u ${USER_ID} ${USER} 1>/dev/null
 
 setup() {
     # testing for model files and config file is sufficient to determine if we need to configure
-    # if this test falls though, the internal emergency_model_reconfigure will be the fallback
     if [[ ! -d "${INVOKEAI_ROOT}/models" ]] ||
-    [[ -z $(ls -A "${INVOKEAI_ROOT}/models") ]] ||
-    [[ ! -f "${INVOKEAI_ROOT}/invokeai.init" ]]; then
+    [[ -z $(ls -A "${INVOKEAI_ROOT}/models") ]]; then
         mkdir -p ${INVOKEAI_ROOT}
         chown --recursive ${USER} ${INVOKEAI_ROOT} || true
         gosu ${USER} invokeai-configure --yes
     fi
 }
 
-# This is a workaround specifically for running this image in RunPod.
-# Install the openssh service so that SCP can be used to copy files to/from the image.
-# This is not an *explicit* test for RunPod, but RunPod sets this environment variable
-# if the public key is configured in settings.
-# consider exposing a separate env var or another control for this purpose?
+
+#### Runpod-specific:
+# We do not install openssh-server in the image by default, but it is useful to have in Runpod,
+# so that SCP can be used to copy files to/from the image.
+# Setting the $PUBLIC_KEY env var in Runpod enables SSH access.
 if [[ -v "PUBLIC_KEY" ]] && [[ ! -d "${HOME}/.ssh" ]]; then
     apt-get update
     apt-get install -y openssh-server
@@ -49,7 +45,8 @@ if [[ -v "PUBLIC_KEY" ]] && [[ ! -d "${HOME}/.ssh" ]]; then
     service ssh start
 fi
 
-# special switch will skip all preflight checks and runtime dir initialization
+# This special switch will skip all preflight checks and runtime dir initialization.
+# It must be passed first to be recognized.
 if [[ $1 != "--skip-setup" ]]; then
     setup
 else

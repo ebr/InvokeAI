@@ -1,6 +1,7 @@
 # Copyright (c) 2022 Kyle Schouviller (https://github.com/kyle0654)
 import asyncio
 from inspect import signature
+from pathlib import Path
 
 import uvicorn
 from invokeai.backend.util.logging import InvokeAILogger
@@ -62,13 +63,6 @@ async def startup_event():
 async def shutdown_event():
     ApiDependencies.shutdown()
 
-
-# Include all routers
-# TODO: REMOVE
-# app.include_router(
-#     invocation.invocation_router,
-#     prefix = '/api')
-
 app.include_router(sessions.session_router, prefix="/api")
 
 app.include_router(models.models_router, prefix="/api")
@@ -119,16 +113,12 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# Override API doc favicons
-app.mount("/static", StaticFiles(directory="static/dream_web"), name="static")
-
-
 @app.get("/docs", include_in_schema=False)
 def overridden_swagger():
     return get_swagger_ui_html(
         openapi_url=app.openapi_url,
         title=app.title,
-        swagger_favicon_url="/static/favicon.ico",
+        swagger_favicon_url="static/favicon.ico",
     )
 
 
@@ -137,13 +127,19 @@ def overridden_redoc():
     return get_redoc_html(
         openapi_url=app.openapi_url,
         title=app.title,
-        redoc_favicon_url="/static/favicon.ico",
+        redoc_favicon_url="static/favicon.ico",
     )
 
+# Resolving the directory paths this way enables serving static assets from within the virtual environment
+# Static paths are relative to this file's location. There may be a better way to do this using Starlette.
+app.mount(
+    "/static", StaticFiles(directory=Path(__file__).parents[1] / "assets/web"), name="static"
+)
 
 # Must mount *after* the other routes else it borks em
 app.mount(
-    "/", StaticFiles(directory="invokeai/frontend/web/dist", html=True), name="ui"
+    # otherwise the UI only works when package is installed in editable mode
+    "/", StaticFiles(directory=Path(__file__).parents[1] / "frontend/web/dist", html=True), name="ui",
 )
 
 

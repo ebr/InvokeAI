@@ -212,10 +212,10 @@ class InvokeAISettings(BaseSettings):
         upcase_environ = dict()
         for key,value in os.environ.items():
             upcase_environ[key.upper()] = value
-        
+
         fields = cls.__fields__
         cls.argparse_groups = {}
-        
+
         for name, field in fields.items():
             if name not in cls._excluded():
                 current_default = field.default

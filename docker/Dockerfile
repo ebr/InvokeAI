@@ -1,5 +1,6 @@
-#######################
-#### Builder stage ####
+# syntax=docker/dockerfile:1.4
+
+## Builder stage
 
 FROM library/ubuntu:22.04 AS builder
 
@@ -56,8 +57,18 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         pip install -e "."; \
     fi
 
-#######################
-#### Runtime stage ####
+#### Build the Web UI ------------------------------------
+
+FROM node:18 as web-builder
+WORKDIR /build
+COPY invokeai/frontend/web/ ./
+RUN \
+# RUN --mount=type=cache,target=node_modules \
+    yarn install --include dev
+RUN yarn vite build
+
+
+#### Runtime stage ---------------------------------------
 
 FROM library/ubuntu:22.04 as runtime
 
@@ -93,8 +104,9 @@ ENV VIRTUAL_ENV=/opt/venv/invokeai
 ENV INVOKEAI_ROOT=/invokeai
 ENV PATH="$VIRTUAL_ENV/bin:$INVOKEAI_SRC:$PATH"
 
-COPY --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --link --from=builder ${INVOKEAI_SRC} ${INVOKEAI_SRC}
+COPY --link --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --link --from=web-builder /build/dist ${INVOKEAI_SRC}/invokeai/frontend/web/dist
 
 WORKDIR ${INVOKEAI_SRC}
 
@@ -102,9 +114,10 @@ WORKDIR ${INVOKEAI_SRC}
 RUN cd /usr/lib/$(uname -p)-linux-gnu/pkgconfig/ && ln -sf opencv4.pc opencv.pc
 RUN python3 -c "from patchmatch import patch_match"
 
-# Create unprivileged user
+# Create unprivileged user and make the local dir
 RUN useradd --create-home --shell /bin/bash -u 1000 --comment "container local user" invoke
+RUN mkdir -p ${INVOKEAI_ROOT} && chown -R invoke:invoke ${INVOKEAI_ROOT}
 
 COPY docker/docker-entrypoint.sh ./
 ENTRYPOINT ["/opt/invokeai/docker-entrypoint.sh"]
-CMD ["invokeai", "--web", "--host", "0.0.0.0"]
+CMD ["invokeai-web", "--host", "0.0.0.0"]
