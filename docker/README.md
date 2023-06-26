@@ -18,12 +18,15 @@ This is done via Docker Desktop preferences
 
 ## Quickstart
 
-1. Make a copy of `env.sample` and name it `.env` (`cp env.sample .env` (Mac/Linux) or `copy example.env .env` (Windows)). Make changes as necessary.
-2. `docker-compose up`
+
+1. Make a copy of `env.sample` and name it `.env` (`cp env.sample .env` (Mac/Linux) or `copy example.env .env` (Windows)). Make changes as necessary. Set `INVOKEAI_ROOT` to an absolute path to:
+    a. the desired location of the InvokeAI runtime directory, or
+    b. an existing, v3.0.0 compatible runtime directory.
+1. `docker-compose up`
 
 The image will be built automatically if needed.
 
-The runtime directory (holding models and outputs) will be created in your home directory, under `~/invokeai`, populated with necessary content (you will be asked a couple of questions during setup)
+The runtime directory (holding models and outputs) will be created in the location specified by `INVOKEAI_ROOT`. The default location is `~/invokeai`. The runtime directory will be populated with the base configs and models necessary to start generating.
 
 ### Use a GPU
 
@@ -35,40 +38,28 @@ The Docker daemon on the system must be already set up to use the GPU. In case o
 
 ## Customize
 
-Check the `.env` file. It contains environment variables for running in Docker. Fill it in with your own values. Next time you run `docker-compose up`, your custom values will be used.
+Check the `.env.sample` file. It contains some environment variables for running in Docker. Copy it, name it `.env`, and fill it in with your own values. Next time you run `docker-compose up`, your custom values will be used.
 
 You can also set these values in `docker-compose.yml` directly, but `.env` will help avoid conflicts when code is updated.
 
-Example:
+Example (most values are optional):
 
 ```
-LOCAL_ROOT_DIR=/Volumes/HugeDrive/invokeai
+INVOKEAI_ROOT=/Volumes/WorkDrive/invokeai
 HUGGINGFACE_TOKEN=the_actual_token
 CONTAINER_UID=1000
 GPU_DRIVER=cuda
 ```
 
-## Moar Customize!
+## Even Moar Customize!
 
 See the `docker-compose.yaml` file. The `command` instruction can be uncommented and used to run arbitrary startup commands. Some examples below.
-
-
-#### Turn off the NSFW checker
-
-```
-command:
-  - invokeai
-  - --no-nsfw_check
-  - --web
-  - --host 0.0.0.0
-```
-
 
 ### Reconfigure the runtime directory
 
 Can be used to download additional models from the supported model list
 
-In conjunction with `LOCAL_ROOT_DIR` can be also used to create bran
+In conjunction with `INVOKEAI_ROOT` can be also used to initialize a runtime directory
 
 ```
 command:
@@ -76,24 +67,9 @@ command:
   - --yes
 ```
 
-
-#### Run in CLI mode
-
-This container starts InvokeAI in web mode by default.
-
-Override the `command` and run `docker compose:
+Or install models:
 
 ```
 command:
-   - invoke
+  - invokeai-model-install
 ```
-
-Then attach to the container from another terminal:
-
-```
-$ docker attach $(docker compose ps invokeai -q)
-
-invoke>
-```
-
-Enjoy using the `invoke>` prompt. To detach from the container, type `Ctrl+P` followed by `Ctrl+Q` (this is the escape sequence).
