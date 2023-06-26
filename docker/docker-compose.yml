@@ -24,11 +24,10 @@ services:
       - INVOKEAI_ROOT
       - HF_HOME
 
-    # # Create a .env file in the same directory as this docker-compose.yml file
-    # # and populate it with environment variables. See .env.sample
-
-    # env_file:
-    #   - .env
+    # Create a .env file in the same directory as this docker-compose.yml file
+    # and populate it with environment variables. See .env.sample
+    env_file:
+      - .env
 
     ports:
       - "${INVOKEAI_PORT:-9090}:9090"
