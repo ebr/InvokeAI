@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -14,17 +14,17 @@ jobs:
           - '3.10'
           # - '3.11'
         include:
-          - pytorch: linux-cuda-11_7
-            os: ubuntu-22.04
-            github-env: $GITHUB_ENV
+          # - pytorch: linux-cuda-11_7
+          #   os: ubuntu-22.04
+          #   github-env: $GITHUB_ENV
           # - pytorch: linux-rocm-5_2
           #   os: ubuntu-22.04
           #   extra-index-url: 'https://download.pytorch.org/whl/rocm5.2'
           #   github-env: $GITHUB_ENV
-          # - pytorch: linux-cpu
-          #   os: ubuntu-22.04
-          #   extra-index-url: 'https://download.pytorch.org/whl/cpu'
-          #   github-env: $GITHUB_ENV
+          - pytorch: linux-cpu
+            os: ubuntu-22.04
+            extra-index-url: 'https://download.pytorch.org/whl/cpu'
+            github-env: $GITHUB_ENV
           # - pytorch: macos-default
           #   os: macOS-12
           #   github-env: $GITHUB_ENV
@@ -86,7 +86,6 @@ jobs:
         run: >
           invokeai
           --no-patchmatch
-          --no-nsfw_checker
           --precision=float32
           --always_use_cpu
           --use_memory_db
