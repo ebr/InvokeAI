@@ -186,7 +186,7 @@ class InvokeAISettings(BaseSettings):
 
     def parse_args(self, argv: list = sys.argv[1:]):
         parser = self.get_parser()
-        opt = parser.parse_args(argv)
+        opt, _ = parser.parse_known_args(argv)
         for name in self.__fields__:
             if name not in self._excluded():
                 value = getattr(opt, name)
@@ -268,13 +268,14 @@ class InvokeAISettings(BaseSettings):
         parser = PagingArgumentParser(
             prog=cls.cmd_name(),
             description=cls.__doc__,
+            exit_on_error=False,
         )
         cls.add_parser_arguments(parser)
         return parser
 
     @classmethod
     def add_subparser(cls, parser: argparse.ArgumentParser):
-        parser.add_parser(cls.cmd_name(), help=cls.__doc__)
+        parser.add_parser(cls.cmd_name(), help=cls.__doc__, exit_on_error=False)
 
     @classmethod
     def _excluded(self) -> List[str]:
