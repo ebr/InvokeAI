@@ -8,7 +8,6 @@ concurrency:
 
 jobs:
   matrix:
-    if: github.event.pull_request.draft == false
     strategy:
       matrix:
         python-version:
@@ -37,6 +36,14 @@ jobs:
     env:
       PIP_USE_PEP517: '1'
     steps:
+      - name: Free up more disk space on the runner
+        # https://github.com/actions/runner-images/issues/2840#issuecomment-1284059930
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo swapoff /mnt/swapfile
+          sudo rm -rf /mnt/swapfile
+
       - name: Checkout sources
         id: checkout-sources
         uses: actions/checkout@v3
@@ -50,14 +57,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: pyproject.toml
-
-      - name: Free up more disk space on the runner
-        # https://github.com/actions/runner-images/issues/2840#issuecomment-1284059930
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo swapoff /mnt/swapfile
-          sudo rm -rf /mnt/swapfile
 
       - name: install invokeai
         env:
