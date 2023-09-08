@@ -117,8 +117,16 @@ export const imagesApi = api.injectEndpoints({
       ],
       keepUnusedDataFor: 86400, // 24 hours
     }),
-    getImageMetadataFromFile: build.query<ImageMetadataAndWorkflow, ImageDTO>({
-      queryFn: async (args: ImageDTO, api, extraOptions) => {
+    getImageMetadataFromFile: build.query<
+      ImageMetadataAndWorkflow,
+      { image: ImageDTO; shouldFetchMetadataFromApi: boolean }
+    >({
+      queryFn: async (
+        args: { image: ImageDTO; shouldFetchMetadataFromApi: boolean },
+        api,
+        extraOptions,
+        fetchWithBaseQuery
+      ) => {
         const authToken = $authToken.get();
         const projectId = $projectId.get();
         const customBaseQuery = fetchBaseQuery({
@@ -139,17 +147,30 @@ export const imagesApi = api.injectEndpoints({
         });
 
         const response = await customBaseQuery(
-          args.image_url,
+          args.image.image_url,
           api,
           extraOptions
         );
-        const data = await getMetadataAndWorkflowFromImageBlob(
+        const blobData = await getMetadataAndWorkflowFromImageBlob(
           response.data as Blob
         );
-        return { data };
+
+        let metadata = blobData.metadata;
+
+        if (args.shouldFetchMetadataFromApi) {
+          const metadataResult = await fetchWithBaseQuery(
+            `images/i/${args.image.image_name}/metadata`
+          );
+          if (metadataResult.data) {
+            metadata = (metadataResult.data as UnsafeImageMetadata)
+              .metadata as UnsafeImageMetadata['metadata'];
+          }
+        }
+
+        return { data: { ...blobData, metadata } };
       },
-      providesTags: (result, error, image_dto) => [
-        { type: 'ImageMetadataFromFile', id: image_dto.image_name },
+      providesTags: (result, error, { image, shouldFetchMetadataFromApi }) => [
+        { type: 'ImageMetadataFromFile', id: image.image_name },
       ],
       keepUnusedDataFor: 86400, // 24 hours
     }),
