@@ -34,7 +34,7 @@ export const socketMiddleware = () => {
       socketOptions.auth = { token: authToken };
     }
 
-    socketOptions.transports = ['websocket', 'polling'];
+    socketOptions.transports = ['polling'];
   }
 
   const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
